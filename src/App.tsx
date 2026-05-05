@@ -146,7 +146,7 @@ const Navbar = ({ language, setLanguage }: { language: 'es' | 'en', setLanguage:
       <div className="max-w-[1600px] mx-auto px-6 h-32 flex justify-between items-center">
         <a href="#" className="flex items-center group">
           <img 
-            src="/LOGO APAZ TS Final.PNG" 
+            src="/logo-final.png" 
             alt="APAZ Talent Search" 
             className="h-16 md:h-24 w-auto object-contain transition-transform duration-500 group-hover:scale-105"
           />
@@ -381,7 +381,7 @@ const Philosophy = ({ language }: { language: 'es' | 'en' }) => {
         </h2>
         <div className="flex justify-center mb-20">
           <img 
-            src={language === 'es' ? "/Candidate Centricity esp.png" : "/Candidate Centricity eng.png"} 
+            src={language === 'es' ? "/candidate-centricity-esp.png" : "/candidate-centricity-eng.png"} 
             alt="Candidate Centricity" 
             className="max-w-4xl w-full h-auto object-contain"
           />
@@ -407,7 +407,7 @@ const Philosophy = ({ language }: { language: 'es' | 'en' }) => {
 
 const ContactForm = ({ language }: { language: 'es' | 'en' }) => {
   const t = translations[language].contact;
-  const [formData, setFormData] = React.useState({
+  const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
@@ -604,7 +604,7 @@ const Footer = ({ language }: { language: 'es' | 'en' }) => {
         <div className="grid grid-cols-1 md:grid-cols-6 gap-6 lg:gap-12">
           <div className="col-span-1 md:col-span-3 space-y-2">
             <img 
-              src="/Logo APAZ TS fondo negro.png" 
+              src="/logo-fondo-negro.png" 
               alt="APAZ Talent Search" 
               className="h-32 md:h-56 w-auto object-contain" 
             />
@@ -613,14 +613,12 @@ const Footer = ({ language }: { language: 'es' | 'en' }) => {
             </p>
             <div className="flex gap-3">
               {socialLinks.map((item, i) => (
-                <a
+                <div
                   key={i}
-                  className="hover:bg-brand-gold hover:text-brand-black border border-white/10 p-3 transition-all duration-300"
-                  target="_blank"
-                  href={item.link}
+                  className="border border-white/10 p-3 transition-all duration-300 opacity-40"
                 >
                   {item.icon}
-                </a>
+                </div>
               ))}
             </div>
           </div>
