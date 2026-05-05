@@ -407,17 +407,17 @@ const Philosophy = ({ language }: { language: 'es' | 'en' }) => {
 
 const ContactForm = ({ language }: { language: 'es' | 'en' }) => {
   const t = translations[language].contact;
-  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+  const [formData, setFormData] = React.useState({
+    name: '',
+    email: '',
+    phone: '',
+    message: ''
+  });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) return;
-
     setStatus('loading');
-    
-    e.preventDefault()
-    setStatus('loading')
 
     try {
       const { error } = await supabase
@@ -425,20 +425,23 @@ const ContactForm = ({ language }: { language: 'es' | 'en' }) => {
         .insert([{
           name: formData.name,
           email: formData.email,
+          phone: formData.phone,
           message: formData.message
-        }])
+        }]);
 
-      if (error) throw error
+      if (error) throw error;
       
-      // Aseguramos que el estado cambie a éxito
-      setStatus('success')
-      setFormData({ name: '', email: '', message: '' })
-      
+      setStatus('success');
     } catch (error) {
-      console.error('Error submitting form:', error)
-      setStatus('error')
-      setTimeout(() => setStatus('idle'), 3000)
+      console.error('Error submitting form:', error);
+      setStatus('error');
+      setTimeout(() => setStatus('idle'), 3000);
     }
+  };
+
+  const openWhatsApp = () => {
+    const text = encodeURIComponent(`Hola Alejandro, acabo de registrarme en APAZ Talent Search. Mi nombre es ${formData.name}. Me gustaría recibir más información.`);
+    window.open(`https://wa.me/525525164576?text=${text}`, '_blank');
   };
 
   return (
@@ -480,15 +483,27 @@ const ContactForm = ({ language }: { language: 'es' | 'en' }) => {
                    </h3>
                    <p className="text-xs font-light leading-relaxed opacity-60 uppercase tracking-[0.2em]">
                      {language === 'es' 
-                       ? 'Gracias por contactarnos. Nuestro equipo revisará tu solicitud y se pondrá en contacto contigo muy pronto.' 
-                       : 'Thank you for reaching out. Our team will review your request and get in touch with you very soon.'}
+                       ? 'Gracias por contactarnos. Tu información ha sido guardada.' 
+                       : 'Thank you for reaching out. Your information has been saved.'}
                    </p>
-                   <button 
-                     onClick={() => setStatus('idle')}
-                     className="text-[10px] font-black uppercase tracking-widest border-b-2 border-brand-black hover:border-brand-gold hover:text-brand-gold transition-all pt-8"
-                   >
-                     {language === 'es' ? 'ENVIAR OTRO MENSAJE' : 'SEND ANOTHER MESSAGE'}
-                   </button>
+                   
+                   <div className="pt-4 flex flex-col items-center gap-4">
+                      <button 
+                        onClick={openWhatsApp}
+                        className="w-full bg-[#25D366] text-white p-6 text-sm font-black uppercase tracking-widest hover:bg-[#128C7E] transition-all flex items-center justify-center gap-3"
+                      >
+                        HABLAR POR WHATSAPP AHORA
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setStatus('idle');
+                          setFormData({ name: '', email: '', phone: '', message: '' });
+                        }}
+                        className="text-[10px] font-black uppercase tracking-widest opacity-40 hover:opacity-100 transition-all"
+                      >
+                        {language === 'es' ? 'VOLVER AL FORMULARIO' : 'BACK TO FORM'}
+                      </button>
+                   </div>
                  </motion.div>
                ) : (
                  <motion.form 
@@ -496,7 +511,7 @@ const ContactForm = ({ language }: { language: 'es' | 'en' }) => {
                    initial={{ opacity: 0 }}
                    animate={{ opacity: 1 }}
                    exit={{ opacity: 0 }}
-                   className="space-y-12" 
+                   className="space-y-8" 
                    onSubmit={handleSubmit}
                  >
                     <div className="space-y-2">
@@ -510,21 +525,36 @@ const ContactForm = ({ language }: { language: 'es' | 'en' }) => {
                          placeholder={t.placeholderName} 
                        />
                     </div>
-                    <div className="space-y-2">
-                       <label className="text-[10px] font-black uppercase tracking-widest opacity-40">{t.email}</label>
-                       <input 
-                         type="email" 
-                         required
-                         value={formData.email}
-                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                         className="w-full bg-brand-gray p-6 text-xl font-black uppercase tracking-tighter focus:bg-brand-black focus:text-white transition-all outline-none" 
-                         placeholder={t.placeholderEmail} 
-                       />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                       <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase tracking-widest opacity-40">{t.email}</label>
+                          <input 
+                            type="email" 
+                            required
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            className="w-full bg-brand-gray p-6 text-xl font-black uppercase tracking-tighter focus:bg-brand-black focus:text-white transition-all outline-none" 
+                            placeholder={t.placeholderEmail} 
+                          />
+                       </div>
+                       <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase tracking-widest opacity-40">
+                             {language === 'es' ? 'TELÉFONO' : 'PHONE'}
+                          </label>
+                          <input 
+                            type="tel" 
+                            required
+                            value={formData.phone}
+                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                            className="w-full bg-brand-gray p-6 text-xl font-black uppercase tracking-tighter focus:bg-brand-black focus:text-white transition-all outline-none" 
+                            placeholder="+57 300..." 
+                          />
+                       </div>
                     </div>
                     <div className="space-y-2">
                        <label className="text-[10px] font-black uppercase tracking-widest opacity-40">{t.message}</label>
                        <textarea 
-                         rows={3} 
+                         rows={2} 
                          required
                          value={formData.message}
                          onChange={(e) => setFormData({ ...formData, message: e.target.value })}
@@ -533,28 +563,12 @@ const ContactForm = ({ language }: { language: 'es' | 'en' }) => {
                        ></textarea>
                     </div>
                     
-                    <div className="relative overflow-hidden group">
-                      <button 
-                        disabled={status === 'loading'}
-                        className={`w-full h-24 text-2xl font-black uppercase tracking-tighter transition-all duration-500 flex items-center justify-center gap-4 ${
-                          status === 'error' 
-                            ? 'bg-red-600 text-white' 
-                            : 'bg-brand-black text-white hover:bg-brand-gold'
-                        }`}
-                      >
-                        {status === 'loading' ? (
-                          <div className="flex gap-1">
-                            <div className="w-2 h-2 bg-white animate-bounce" />
-                            <div className="w-2 h-2 bg-white animate-bounce [animation-delay:-.3s]" />
-                            <div className="w-2 h-2 bg-white animate-bounce [animation-delay:-.5s]" />
-                          </div>
-                        ) : status === 'error' ? (
-                          <>{language === 'es' ? 'ERROR AL ENVIAR' : 'ERROR SENDING'}</>
-                        ) : (
-                          <>{t.submit} →</>
-                        )}
-                      </button>
-                    </div>
+                    <button 
+                      disabled={status === 'loading'}
+                      className="w-full h-20 bg-brand-black text-white text-xl font-black uppercase tracking-tighter hover:bg-brand-gold transition-all duration-500"
+                    >
+                      {status === 'loading' ? 'ENVIANDO...' : <>{t.submit} →</>}
+                    </button>
                  </motion.form>
                )}
              </AnimatePresence>
