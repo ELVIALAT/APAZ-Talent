@@ -252,7 +252,7 @@ const Hero = ({ language }: { language: 'es' | 'en' }) => {
 
         <div className="flex-1 bg-brand-gray relative overflow-hidden group min-h-[400px] md:min-h-0">
            <img 
-             src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=1200" 
+             src="/imagen-portada.png" 
              className="w-full h-full object-cover grayscale brightness-90 group-hover:scale-110 transition-transform duration-1000"
              alt="Collaborative Talent"
            />
