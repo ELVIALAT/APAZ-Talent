@@ -386,16 +386,16 @@ const Philosophy = ({ language }: { language: 'es' | 'en' }) => {
             className="max-w-4xl w-full h-auto object-contain"
           />
         </div>
-        <div className="max-w-3xl mx-auto grid md:grid-cols-2 gap-20 text-left">
+        <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-20 text-left">
            <div>
-              <h4 className="text-[10px] font-black uppercase mb-6 tracking-widest">{t.label1}</h4>
-              <p className="text-sm font-light leading-relaxed opacity-60 border-l border-white/20 pl-8">
+              <h4 className="text-xs font-black uppercase mb-6 tracking-widest text-brand-gold">{t.label1}</h4>
+              <p className="text-base font-light leading-relaxed opacity-80 border-l border-white/20 pl-8">
                  {t.desc1}
               </p>
            </div>
            <div>
-              <h4 className="text-[10px] font-black uppercase mb-6 tracking-widest">{t.label2}</h4>
-              <p className="text-sm font-light leading-relaxed opacity-60 border-l border-white/20 pl-8">
+              <h4 className="text-xs font-black uppercase mb-6 tracking-widest text-brand-gold">{t.label2}</h4>
+              <p className="text-base font-light leading-relaxed opacity-80 border-l border-white/20 pl-8">
                  {t.desc2}
               </p>
            </div>
