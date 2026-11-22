@@ -18,3 +18,78 @@
 
 .letter-spacing-huge { letter-spacing: 0.2em; }
 .letter-spacing-tight { letter-spacing: -0.04em; }
+
+/* Executive typography for sanitized Manatal job descriptions */
+.job-prose {
+  color: #141414;
+  font-size: 0.95rem;
+  line-height: 1.75;
+}
+
+.job-prose > *:first-child {
+  margin-top: 0;
+}
+
+.job-prose p {
+  margin-bottom: 1rem;
+  color: rgba(0, 0, 0, 0.78);
+}
+
+.job-prose h1,
+.job-prose h2,
+.job-prose h3,
+.job-prose h4,
+.job-prose h5,
+.job-prose h6 {
+  color: #000000;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  margin-top: 2rem;
+  margin-bottom: 0.85rem;
+  padding-left: 0.85rem;
+  border-left: 3px solid #c5a059;
+  font-size: 0.85rem;
+  line-height: 1.3;
+}
+
+.job-prose ul,
+.job-prose ol {
+  margin-bottom: 1.25rem;
+  padding-left: 1.25rem;
+}
+
+.job-prose ul {
+  list-style-type: square;
+}
+
+.job-prose ol {
+  list-style-type: decimal;
+}
+
+.job-prose li {
+  margin-bottom: 0.45rem;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.job-prose li::marker {
+  color: #c5a059;
+}
+
+.job-prose strong,
+.job-prose b {
+  color: #000000;
+  font-weight: 700;
+}
+
+.job-prose a {
+  color: #000000;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: #c5a059;
+  text-underline-offset: 3px;
+}
+
+.job-prose a:hover {
+  color: #c5a059;
+}

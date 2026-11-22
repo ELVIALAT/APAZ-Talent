@@ -1,8 +1,27 @@
 import { motion, AnimatePresence } from "motion/react";
-import { Search, Briefcase, Users, ArrowRight, Menu, X, ChevronRight, Globe, FacebookIcon, InstagramIcon, LinkedinIcon, TwitterIcon, XIcon, CheckCircle2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Menu, X, LinkedinIcon, InstagramIcon, XIcon, CheckCircle2 } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
 import { PrivacyPolicy, CookiePolicy, CookieSettings } from "./LegalContent";
 import { supabase } from "./lib/supabase";
+import { fetchManatalJobs, NormalizedJob } from "./lib/manatal";
+import { FeaturedJobsSection } from "./components/FeaturedJobsSection";
+import { JobsPage } from "./components/JobsPage";
+
+type RouteState =
+  | { page: 'home' }
+  | { page: 'jobs'; jobId: string | null };
+
+function parseRoute(pathname: string): RouteState {
+  const cleaned = pathname.replace(/\/+$/, '') || '/';
+  if (cleaned === '/jobs' || cleaned === '/vacantes') {
+    return { page: 'jobs', jobId: null };
+  }
+  const match = cleaned.match(/^\/(?:jobs|vacantes)\/([^/]+)$/);
+  if (match) {
+    return { page: 'jobs', jobId: decodeURIComponent(match[1]) };
+  }
+  return { page: 'home' };
+}
 
 // --- Translations ---
 
@@ -137,14 +156,40 @@ const translations = {
 
 // --- Components ---
 
-const Navbar = ({ language, setLanguage }: { language: 'es' | 'en', setLanguage: (l: 'es' | 'en') => void }) => {
+const Navbar = ({
+  language,
+  setLanguage,
+  currentPage,
+  jobsCount,
+  onNavigateHome,
+  onNavigateJobs,
+  onNavigateSection,
+}: {
+  language: 'es' | 'en';
+  setLanguage: (l: 'es' | 'en') => void;
+  currentPage: 'home' | 'jobs';
+  jobsCount: number;
+  onNavigateHome: () => void;
+  onNavigateJobs: () => void;
+  onNavigateSection: (sectionId: string) => void;
+}) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const t = translations[language];
+  const sectionIds = ['servicios', 'filosofia', 'contacto'];
+  const jobsLabel = language === 'es' ? 'Vacantes' : 'Jobs';
 
   return (
     <nav className="border-b-2 border-brand-black bg-brand-white sticky top-0 z-50">
       <div className="max-w-[1600px] mx-auto px-6 h-32 flex justify-between items-center">
-        <a href="#" className="flex items-center group">
+        <a
+          href="/"
+          onClick={(e) => {
+            e.preventDefault();
+            setIsMobileMenuOpen(false);
+            onNavigateHome();
+          }}
+          className="flex items-center group"
+        >
           <img 
             src="/logo-final.png" 
             alt="APAZ Talent Search" 
@@ -155,15 +200,41 @@ const Navbar = ({ language, setLanguage }: { language: 'es' | 'en', setLanguage:
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-10">
           <div className="flex items-center gap-8 text-[10px] font-black uppercase tracking-[0.2em] mr-8 border-r border-brand-black/10 pr-8">
-            {t.nav.map((item) => (
-              <a 
-                key={item} 
-                href={`#${item.toLowerCase().replace('í', 'i')}`} 
-                className="hover:line-through transition-all decoration-2"
-              >
-                {item}
-              </a>
-            ))}
+            {t.nav.map((item, idx) => {
+              const targetId = sectionIds[idx] ?? 'contacto';
+              return (
+                <a 
+                  key={item} 
+                  href={`/#${targetId}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onNavigateSection(targetId);
+                  }}
+                  className="hover:line-through transition-all decoration-2"
+                >
+                  {item}
+                </a>
+              );
+            })}
+            <a
+              href="/jobs"
+              onClick={(e) => {
+                e.preventDefault();
+                onNavigateJobs();
+              }}
+              className={`inline-flex items-center gap-2 transition-all ${
+                currentPage === 'jobs'
+                  ? 'border-b-2 border-brand-gold pb-0.5 text-brand-black'
+                  : 'hover:text-brand-gold'
+              }`}
+            >
+              <span>{jobsLabel}</span>
+              {jobsCount > 0 && (
+                <span className="bg-brand-gold text-brand-black px-1.5 py-0.5 text-[9px] leading-none">
+                  {jobsCount}
+                </span>
+              )}
+            </a>
           </div>
           
           <div className="flex items-center gap-3">
@@ -202,16 +273,39 @@ const Navbar = ({ language, setLanguage }: { language: 'es' | 'en', setLanguage:
           animate={{ opacity: 1 }}
           className="absolute top-full left-0 right-0 bg-brand-black text-white p-12 flex flex-col gap-8 md:hidden h-[calc(100vh-128px)]"
         >
-          {t.nav.map((item) => (
-            <a 
-              key={item} 
-              href={`#${item.toLowerCase().replace('í', 'i')}`}
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="text-4xl font-black uppercase tracking-tighter"
-            >
-              {item}
-            </a>
-          ))}
+          {t.nav.map((item, idx) => {
+            const targetId = sectionIds[idx] ?? 'contacto';
+            return (
+              <a 
+                key={item} 
+                href={`/#${targetId}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsMobileMenuOpen(false);
+                  onNavigateSection(targetId);
+                }}
+                className="text-4xl font-black uppercase tracking-tighter"
+              >
+                {item}
+              </a>
+            );
+          })}
+          <a
+            href="/jobs"
+            onClick={(e) => {
+              e.preventDefault();
+              setIsMobileMenuOpen(false);
+              onNavigateJobs();
+            }}
+            className="text-4xl font-black uppercase tracking-tighter text-brand-gold flex items-center gap-4"
+          >
+            <span>{jobsLabel}</span>
+            {jobsCount > 0 && (
+              <span className="text-sm bg-brand-gold text-brand-black px-2.5 py-1">
+                {jobsCount}
+              </span>
+            )}
+          </a>
         </motion.div>
       )}
     </nav>
@@ -419,6 +513,9 @@ const ContactForm = ({ language }: { language: 'es' | 'en' }) => {
     e.preventDefault();
     setStatus('loading');
 
+    let submitted = false;
+
+    // 1. Submit to Supabase if table exists
     try {
       const { error } = await supabase
         .from('contacts')
@@ -429,13 +526,40 @@ const ContactForm = ({ language }: { language: 'es' | 'en' }) => {
           message: formData.message
         }]);
 
-      if (error) throw error;
-      
-      setStatus('success');
+      if (!error) {
+        submitted = true;
+      } else {
+        console.warn('Supabase insert warning:', error);
+      }
     } catch (error) {
-      console.error('Error submitting form:', error);
+      console.warn('Supabase submit error:', error);
+    }
+
+    // 2. Submit to Netlify Forms (Triggers Netlify email notifications)
+    try {
+      const formBody = new URLSearchParams({
+        'form-name': 'contact',
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        message: formData.message
+      }).toString();
+
+      await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formBody
+      });
+      submitted = true;
+    } catch (err) {
+      console.warn('Netlify form submit error:', err);
+    }
+
+    if (submitted) {
+      setStatus('success');
+    } else {
       setStatus('error');
-      setTimeout(() => setStatus('idle'), 3000);
+      setTimeout(() => setStatus('idle'), 4000);
     }
   };
 
@@ -512,12 +636,17 @@ const ContactForm = ({ language }: { language: 'es' | 'en' }) => {
                    animate={{ opacity: 1 }}
                    exit={{ opacity: 0 }}
                    className="space-y-8" 
+                   name="contact"
+                   data-netlify="true"
+                   netlify-honeypot="bot-field"
                    onSubmit={handleSubmit}
                  >
+                    <input type="hidden" name="form-name" value="contact" />
                     <div className="space-y-2">
                        <label className="text-[10px] font-black uppercase tracking-widest opacity-40">{t.name}</label>
                        <input 
                          type="text" 
+                         name="name"
                          required
                          value={formData.name}
                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -530,6 +659,7 @@ const ContactForm = ({ language }: { language: 'es' | 'en' }) => {
                           <label className="text-[10px] font-black uppercase tracking-widest opacity-40">{t.email}</label>
                           <input 
                             type="email" 
+                            name="email"
                             required
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -543,6 +673,7 @@ const ContactForm = ({ language }: { language: 'es' | 'en' }) => {
                           </label>
                           <input 
                             type="tel" 
+                            name="phone"
                             required
                             value={formData.phone}
                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -555,6 +686,7 @@ const ContactForm = ({ language }: { language: 'es' | 'en' }) => {
                        <label className="text-[10px] font-black uppercase tracking-widest opacity-40">{t.message}</label>
                        <textarea 
                          rows={2} 
+                         name="message"
                          required
                          value={formData.message}
                          onChange={(e) => setFormData({ ...formData, message: e.target.value })}
@@ -578,14 +710,23 @@ const ContactForm = ({ language }: { language: 'es' | 'en' }) => {
   );
 };
 
-const Footer = ({ language }: { language: 'es' | 'en' }) => {
+const Footer = ({
+  language,
+  onNavigateJobs,
+  onNavigateSection,
+}: {
+  language: 'es' | 'en';
+  onNavigateJobs: () => void;
+  onNavigateSection: (sectionId: string) => void;
+}) => {
   const year = new Date().getFullYear();
   const t = translations[language];
 
   const resources = [
-    { title: t.nav[0], href: '#servicios' },
-    { title: t.nav[1], href: '#filosofia' },
-    { title: t.nav[2], href: '#contacto' },
+    { title: t.nav[0], sectionId: 'servicios' },
+    { title: t.nav[1], sectionId: 'filosofia' },
+    { title: language === 'es' ? 'Vacantes' : 'Jobs', isJobs: true },
+    { title: t.nav[2], sectionId: 'contacto' },
   ];
 
   const legal = [
@@ -631,7 +772,15 @@ const Footer = ({ language }: { language: 'es' | 'en' }) => {
               {resources.map((item) => (
                 <a 
                   key={item.title} 
-                  href={item.href}
+                  href={item.isJobs ? '/jobs' : `/#${item.sectionId}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (item.isJobs) {
+                      onNavigateJobs();
+                    } else if (item.sectionId) {
+                      onNavigateSection(item.sectionId);
+                    }
+                  }}
                   className="text-[10px] font-black uppercase tracking-[0.2em] hover:text-brand-gold transition-colors"
                 >
                   {item.title}
@@ -837,6 +986,15 @@ const CookieBanner = ({ language, onOpenLegal }: { language: 'es' | 'en', onOpen
 
 export default function App() {
   const [language, setLanguage] = useState<'es' | 'en'>('es');
+  const [route, setRoute] = useState<RouteState>(() =>
+    parseRoute(window.location.pathname)
+  );
+  const [jobs, setJobs] = useState<NormalizedJob[]>([]);
+  const [jobsTotal, setJobsTotal] = useState(0);
+  const [jobsLoading, setJobsLoading] = useState(true);
+  const [jobsError, setJobsError] = useState<string | null>(null);
+  const [jobsFetchTick, setJobsFetchTick] = useState(0);
+
   const [cookiePreferences, setCookiePreferences] = useState({
     functional: true,
     analytics: true,
@@ -853,17 +1011,146 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    const onPopState = () => {
+      setRoute(parseRoute(window.location.pathname));
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setJobsLoading(true);
+    setJobsError(null);
+
+    fetchManatalJobs({ signal: controller.signal })
+      .then((res) => {
+        setJobs(res.jobs);
+        setJobsTotal(res.total);
+      })
+      .catch((err) => {
+        if (err?.name !== 'AbortError') {
+          setJobsError(err?.message || 'Error');
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setJobsLoading(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [jobsFetchTick]);
+
+  useEffect(() => {
+    if (route.page === 'jobs') {
+      document.title =
+        language === 'es'
+          ? 'Vacantes | APAZ TALENT SEARCH'
+          : 'Jobs | APAZ TALENT SEARCH';
+    } else {
+      document.title = 'APAZ TALENT SEARCH';
+    }
+  }, [route.page, language]);
+
+  const navigateTo = useCallback(
+    (path: string, options?: { scrollToTop?: boolean }) => {
+      if (window.location.pathname !== path) {
+        window.history.pushState(null, '', path);
+      }
+      setRoute(parseRoute(path));
+      if (options?.scrollToTop !== false) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    },
+    []
+  );
+
+  const navigateToHome = useCallback(() => {
+    navigateTo('/');
+  }, [navigateTo]);
+
+  const navigateToJobs = useCallback(
+    (jobId?: string | null, options?: { preserveScroll?: boolean }) => {
+      const targetPath = jobId ? `/jobs/${encodeURIComponent(jobId)}` : '/jobs';
+      const shouldPreserveScroll =
+        options?.preserveScroll ?? route.page === 'jobs';
+      navigateTo(targetPath, { scrollToTop: !shouldPreserveScroll });
+    },
+    [navigateTo, route.page]
+  );
+
+  const navigateToSection = useCallback((sectionId: string) => {
+    const scrollToTarget = () => {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+
+    if (window.location.pathname !== '/') {
+      window.history.pushState(null, '', `/#${sectionId}`);
+      setRoute({ page: 'home' });
+      setTimeout(scrollToTarget, 80);
+    } else {
+      scrollToTarget();
+    }
+  }, []);
+
+  const retryJobs = useCallback(() => {
+    setJobsFetchTick((n) => n + 1);
+  }, []);
+
   return (
     <div className="bg-brand-white font-sans text-brand-black selection:bg-brand-gold selection:text-brand-black">
       <div className="h-2 bg-brand-black w-full" />
-      <Navbar language={language} setLanguage={setLanguage} />
-      <Hero language={language} />
-      <About language={language} />
-      <Services language={language} />
-      <Philosophy language={language} />
-      {/* <Blog language={language} /> */}
-      <ContactForm language={language} />
-      <Footer language={language} />
+      <Navbar
+        language={language}
+        setLanguage={setLanguage}
+        currentPage={route.page}
+        jobsCount={jobsTotal}
+        onNavigateHome={navigateToHome}
+        onNavigateJobs={() => navigateToJobs(null, { preserveScroll: false })}
+        onNavigateSection={navigateToSection}
+      />
+      {route.page === 'jobs' ? (
+        <JobsPage
+          language={language}
+          jobs={jobs}
+          loading={jobsLoading}
+          error={jobsError}
+          selectedJobId={route.jobId}
+          onSelectJob={(jobId) => navigateToJobs(jobId, { preserveScroll: true })}
+          onRetry={retryJobs}
+          onBackHome={navigateToHome}
+          onNavigateContact={() => navigateToSection('contacto')}
+        />
+      ) : (
+        <>
+          <Hero language={language} />
+          <About language={language} />
+          <Services language={language} />
+          <Philosophy language={language} />
+          <FeaturedJobsSection
+            language={language}
+            jobs={jobs}
+            total={jobsTotal}
+            loading={jobsLoading}
+            error={jobsError}
+            onRetry={retryJobs}
+            onNavigateJobs={(jobId) => navigateToJobs(jobId, { preserveScroll: false })}
+            onNavigateContact={() => navigateToSection('contacto')}
+          />
+          {/* <Blog language={language} /> */}
+          <ContactForm language={language} />
+        </>
+      )}
+      <Footer
+        language={language}
+        onNavigateJobs={() => navigateToJobs(null, { preserveScroll: false })}
+        onNavigateSection={navigateToSection}
+      />
       <CookieBanner language={language} onOpenLegal={(type) => setLegalModal({ isOpen: true, type })} />
       <LegalModal 
         isOpen={legalModal.isOpen} 
