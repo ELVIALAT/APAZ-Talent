@@ -5,6 +5,7 @@ import {
   Calendar,
   Check,
   Copy,
+  Mail,
   MapPin,
   RefreshCw,
   Search,
@@ -62,6 +63,10 @@ const copy = {
     referCandidate: 'REFERIR TALENTO',
     copyLink: 'COPIAR ENLACE',
     copied: 'ENLACE COPIADO',
+    shareLabel: 'COMPARTIR:',
+    emailSubject: (role: string) => `Oportunidad laboral: ${role} | APAZ Talent Search`,
+    emailBody: (role: string, url: string) =>
+      `Te comparto esta oportunidad laboral en APAZ Talent Search:\n\n${role}\n${url}`,
     published: 'PUBLICADA',
     salaryLabel: 'COMPENSACIÓN',
     featuredBadge: 'DESTACADA',
@@ -101,6 +106,10 @@ const copy = {
     referCandidate: 'REFER TALENT',
     copyLink: 'COPY LINK',
     copied: 'LINK COPIED',
+    shareLabel: 'SHARE:',
+    emailSubject: (role: string) => `Career opportunity: ${role} | APAZ Talent Search`,
+    emailBody: (role: string, url: string) =>
+      `Sharing this career opportunity from APAZ Talent Search:\n\n${role}\n${url}`,
     published: 'PUBLISHED',
     salaryLabel: 'COMPENSATION',
     featuredBadge: 'FEATURED',
@@ -254,6 +263,63 @@ export function JobsPage({
     const published = formatPublishedDate(job.publishedAt, language);
     const applyUrl = getJobApplyUrl(job.id);
     const referUrl = getJobReferUrl(job.id);
+    const shareUrl = `${window.location.origin}/jobs/${encodeURIComponent(job.id)}`;
+    const encodedUrl = encodeURIComponent(shareUrl);
+    const encodedTitle = encodeURIComponent(title);
+
+    const shareChannels = [
+      {
+        name: 'Facebook',
+        href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+        icon: (
+          <svg viewBox="0 0 24 24" className="size-4 fill-current" aria-hidden="true">
+            <path d="M13.5 21v-7.5h2.5l.4-3h-2.9V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.3-.1-2.4-.1-2.4 0-4 1.4-4 4.1v2.1H7.7v3h2.5V21h3.3z" />
+          </svg>
+        ),
+      },
+      {
+        name: 'LINE',
+        href: `https://social-plugins.line.me/lineit/share?url=${encodedUrl}`,
+        icon: (
+          <svg viewBox="0 0 24 24" className="size-4 fill-current" aria-hidden="true">
+            <path d="M12 3C6.5 3 2 6.6 2 11c0 3.9 3.5 7.2 8.2 7.8.3.1.8.2.9.5.1.3.1.7 0 1l-.1.8c0 .2-.2.9.8.5s5.3-3.1 7.2-5.3C21 14.3 22 12.7 22 11c0-4.4-4.5-8-10-8zm-4.2 10.5H5.7c-.3 0-.5-.2-.5-.5V8.9c0-.3.2-.5.5-.5s.5.2.5.5v3.6h1.6c.3 0 .5.2.5.5s-.2.5-.5.5zm1.9-.5c0 .3-.2.5-.5.5s-.5-.2-.5-.5V8.9c0-.3.2-.5.5-.5s.5.2.5.5V13zm4.5 0c0 .2-.1.4-.3.5h-.2c-.2 0-.3-.1-.4-.2l-2.1-2.8V13c0 .3-.2.5-.5.5s-.5-.2-.5-.5V8.9c0-.2.1-.4.3-.5.2-.1.4 0 .6.2l2.1 2.8V8.9c0-.3.2-.5.5-.5s.5.2.5.5V13zm3.6-2.5c.3 0 .5.2.5.5s-.2.5-.5.5h-1.6v1h1.6c.3 0 .5.2.5.5s-.2.5-.5.5h-2.1c-.3 0-.5-.2-.5-.5V8.9c0-.3.2-.5.5-.5h2.1c.3 0 .5.2.5.5s-.2.5-.5.5h-1.6v1.1h1.6z" />
+          </svg>
+        ),
+      },
+      {
+        name: 'LinkedIn',
+        href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
+        icon: (
+          <svg viewBox="0 0 24 24" className="size-4 fill-current" aria-hidden="true">
+            <path d="M6.9 8.5H3.6V20h3.3V8.5zM5.2 3.4C4.1 3.4 3.3 4.2 3.3 5.2s.8 1.8 1.9 1.8 1.9-.8 1.9-1.8-.8-1.8-1.9-1.8zM20.4 13.1c0-3.2-1.7-4.9-4.3-4.9-1.8 0-2.8 1-3.3 1.7V8.5H9.6c0 .9 0 11.5 0 11.5h3.2v-6.4c0-.3 0-.7.1-.9.3-.7.9-1.4 1.9-1.4 1.4 0 2.1 1 2.1 2.6V20h3.5v-6.9z" />
+          </svg>
+        ),
+      },
+      {
+        name: 'X',
+        href: `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`,
+        icon: (
+          <svg viewBox="0 0 24 24" className="size-3.5 fill-current" aria-hidden="true">
+            <path d="M18.2 3H21l-6.1 7 7.2 11h-5.6l-4.4-6.7L6 21H3.2l6.5-7.5L2.8 3h5.8l4 6.1L18.2 3zm-1 16.2h1.6L7.7 4.7H6L17.2 19.2z" />
+          </svg>
+        ),
+      },
+      {
+        name: 'WhatsApp',
+        href: `https://api.whatsapp.com/send?text=${encodeURIComponent(`${title} — ${shareUrl}`)}`,
+        icon: (
+          <svg viewBox="0 0 24 24" className="size-4 fill-current" aria-hidden="true">
+            <path d="M12 3a9 9 0 0 0-7.8 13.5L3 21l4.7-1.2A9 9 0 1 0 12 3zm0 16.4c-1.4 0-2.7-.4-3.9-1.1l-.3-.2-2.8.7.7-2.7-.2-.3A7.4 7.4 0 1 1 12 19.4zm4.1-5.5c-.2-.1-1.3-.6-1.5-.7s-.3-.1-.5.1-.6.7-.7.9-.3.2-.5.1a6.1 6.1 0 0 1-1.8-1.1 6.7 6.7 0 0 1-1.2-1.5c-.1-.2 0-.4.1-.5l.3-.4.2-.4v-.4c-.1-.1-.5-1.2-.7-1.6-.2-.4-.4-.4-.5-.4h-.4a.8.8 0 0 0-.6.3 2.5 2.5 0 0 0-.8 1.9c0 1.1.8 2.2.9 2.3a9 9 0 0 0 3.5 3.1c1.3.5 1.8.6 2.4.5a2.1 2.1 0 0 0 1.4-1c.2-.5.2-.9.1-1s-.2-.1-.4-.2z" />
+          </svg>
+        ),
+      },
+      {
+        name: 'Email',
+        href: `mailto:?subject=${encodeURIComponent(t.emailSubject(title))}&body=${encodeURIComponent(t.emailBody(title, shareUrl))}`,
+        icon: <Mail className="size-4" />,
+        isMail: true,
+      },
+    ];
 
     return (
       <article className="bg-brand-white">
@@ -345,6 +411,25 @@ export function JobsPage({
                 </>
               )}
             </button>
+          </div>
+
+          <div className="mt-8 pt-6 border-t border-brand-black/15 flex flex-wrap items-center gap-3">
+            <span className="text-[10px] font-black uppercase tracking-[0.25em] opacity-55 mr-1">
+              {t.shareLabel}
+            </span>
+            {shareChannels.map((channel) => (
+              <a
+                key={channel.name}
+                href={channel.href}
+                target={channel.isMail ? undefined : '_blank'}
+                rel={channel.isMail ? undefined : 'noopener noreferrer'}
+                aria-label={`${t.shareLabel} ${channel.name}`}
+                title={channel.name}
+                className="w-9 h-9 border border-brand-black/25 bg-brand-white text-brand-black flex items-center justify-center hover:bg-brand-black hover:text-brand-gold hover:border-brand-black transition-all duration-200"
+              >
+                {channel.icon}
+              </a>
+            ))}
           </div>
         </div>
 
