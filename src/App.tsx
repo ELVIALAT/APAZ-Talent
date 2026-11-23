@@ -6,13 +6,18 @@ import { supabase } from "./lib/supabase";
 import { fetchManatalJobs, NormalizedJob } from "./lib/manatal";
 import { FeaturedJobsSection } from "./components/FeaturedJobsSection";
 import { JobsPage } from "./components/JobsPage";
+import { OutplacementPage } from "./components/OutplacementPage";
 
 type RouteState =
   | { page: 'home' }
-  | { page: 'jobs'; jobId: string | null };
+  | { page: 'jobs'; jobId: string | null }
+  | { page: 'outplacement' };
 
 function parseRoute(pathname: string): RouteState {
   const cleaned = pathname.replace(/\/+$/, '') || '/';
+  if (cleaned === '/outplacement' || cleaned === '/transicion-de-carrera') {
+    return { page: 'outplacement' };
+  }
   if (cleaned === '/jobs' || cleaned === '/vacantes') {
     return { page: 'jobs', jobId: null };
   }
@@ -163,20 +168,23 @@ const Navbar = ({
   jobsCount,
   onNavigateHome,
   onNavigateJobs,
+  onNavigateOutplacement,
   onNavigateSection,
 }: {
   language: 'es' | 'en';
   setLanguage: (l: 'es' | 'en') => void;
-  currentPage: 'home' | 'jobs';
+  currentPage: 'home' | 'jobs' | 'outplacement';
   jobsCount: number;
   onNavigateHome: () => void;
   onNavigateJobs: () => void;
+  onNavigateOutplacement: () => void;
   onNavigateSection: (sectionId: string) => void;
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const t = translations[language];
   const sectionIds = ['servicios', 'filosofia', 'contacto'];
   const jobsLabel = language === 'es' ? 'Vacantes' : 'Jobs';
+  const outplacementLabel = 'Outplacement';
 
   return (
     <nav className="border-b-2 border-brand-black bg-brand-white sticky top-0 z-50">
@@ -216,6 +224,20 @@ const Navbar = ({
                 </a>
               );
             })}
+            <a
+              href="/outplacement"
+              onClick={(e) => {
+                e.preventDefault();
+                onNavigateOutplacement();
+              }}
+              className={`transition-all ${
+                currentPage === 'outplacement'
+                  ? 'border-b-2 border-brand-gold pb-0.5 text-brand-black'
+                  : 'hover:text-brand-gold'
+              }`}
+            >
+              {outplacementLabel}
+            </a>
             <a
               href="/jobs"
               onClick={(e) => {
@@ -290,6 +312,17 @@ const Navbar = ({
               </a>
             );
           })}
+          <a
+            href="/outplacement"
+            onClick={(e) => {
+              e.preventDefault();
+              setIsMobileMenuOpen(false);
+              onNavigateOutplacement();
+            }}
+            className="text-4xl font-black uppercase tracking-tighter text-white hover:text-brand-gold"
+          >
+            {outplacementLabel}
+          </a>
           <a
             href="/jobs"
             onClick={(e) => {
@@ -393,7 +426,15 @@ const About = ({ language }: { language: 'es' | 'en' }) => {
   );
 };
 
-const Services = ({ language }: { language: 'es' | 'en' }) => {
+const Services = ({
+  language,
+  onNavigateOutplacement,
+  onNavigateContact,
+}: {
+  language: 'es' | 'en';
+  onNavigateOutplacement: () => void;
+  onNavigateContact: () => void;
+}) => {
   const t = translations[language].services;
   const items = [
     {
@@ -401,6 +442,8 @@ const Services = ({ language }: { language: 'es' | 'en' }) => {
       title: t.title1,
       desc: t.desc1,
       tag: t.tag1,
+      ctaLabel: t.cta,
+      onClick: onNavigateContact,
       details: language === 'es' 
         ? ["Mapeo de talento", "Media y Alta Gerencia", "Alineación cultural", "Seguimiento post vinculación"] 
         : ["Talent Mapping", "Middle & Senior Management", "Cultural Alignment", "Post-placement Follow-up"]
@@ -410,6 +453,11 @@ const Services = ({ language }: { language: 'es' | 'en' }) => {
       title: t.title2,
       desc: t.desc2,
       tag: t.tag2,
+      ctaLabel:
+        language === 'es'
+          ? 'Explorar Outplacement con ELVIA'
+          : 'Explore Outplacement with ELVIA',
+      onClick: onNavigateOutplacement,
       details: language === 'es' 
         ? ["Marca Personal", "Estrategia de Red", "Mentores de transición profesional", "Autogestión de transición profesional con ELVIA"] 
         : ["Personal Branding", "Network Strategy", "Professional Transition Mentors", "Career Transition Self-management with ELVIA"]
@@ -422,6 +470,15 @@ const Services = ({ language }: { language: 'es' | 'en' }) => {
         {items.map((item, idx) => (
           <div 
             key={item.id}
+            onClick={item.onClick}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                item.onClick();
+              }
+            }}
             className={`flex-1 p-12 md:p-20 group hover:bg-brand-gold transition-all duration-700 cursor-pointer relative flex flex-col justify-between ${
               idx === 0 ? "border-b-2 md:border-b-0 md:border-r-2" : ""
             } border-brand-black`}
@@ -448,7 +505,7 @@ const Services = ({ language }: { language: 'es' | 'en' }) => {
             </div>
 
             <div className="flex items-center gap-4 group/btn group-hover:text-brand-black mt-20">
-               <span className="text-[10px] font-black uppercase">{t.cta}</span>
+               <span className="text-[10px] font-black uppercase">{item.ctaLabel}</span>
                <div className="w-12 h-1 bg-current group-hover/btn:w-24 transition-all" />
             </div>
           </div>
@@ -713,10 +770,12 @@ const ContactForm = ({ language }: { language: 'es' | 'en' }) => {
 const Footer = ({
   language,
   onNavigateJobs,
+  onNavigateOutplacement,
   onNavigateSection,
 }: {
   language: 'es' | 'en';
   onNavigateJobs: () => void;
+  onNavigateOutplacement: () => void;
   onNavigateSection: (sectionId: string) => void;
 }) => {
   const year = new Date().getFullYear();
@@ -725,6 +784,7 @@ const Footer = ({
   const resources = [
     { title: t.nav[0], sectionId: 'servicios' },
     { title: t.nav[1], sectionId: 'filosofia' },
+    { title: 'Outplacement', isOutplacement: true },
     { title: language === 'es' ? 'Vacantes' : 'Jobs', isJobs: true },
     { title: t.nav[2], sectionId: 'contacto' },
   ];
@@ -772,11 +832,13 @@ const Footer = ({
               {resources.map((item) => (
                 <a 
                   key={item.title} 
-                  href={item.isJobs ? '/jobs' : `/#${item.sectionId}`}
+                  href={item.isJobs ? '/jobs' : item.isOutplacement ? '/outplacement' : `/#${item.sectionId}`}
                   onClick={(e) => {
                     e.preventDefault();
                     if (item.isJobs) {
                       onNavigateJobs();
+                    } else if (item.isOutplacement) {
+                      onNavigateOutplacement();
                     } else if (item.sectionId) {
                       onNavigateSection(item.sectionId);
                     }
@@ -1049,6 +1111,8 @@ export default function App() {
         language === 'es'
           ? 'Vacantes | APAZ TALENT SEARCH'
           : 'Jobs | APAZ TALENT SEARCH';
+    } else if (route.page === 'outplacement') {
+      document.title = 'Outplacement | APAZ TS powered by ELVIA';
     } else {
       document.title = 'APAZ TALENT SEARCH';
     }
@@ -1081,6 +1145,10 @@ export default function App() {
     [navigateTo, route.page]
   );
 
+  const navigateToOutplacement = useCallback(() => {
+    navigateTo('/outplacement');
+  }, [navigateTo]);
+
   const navigateToSection = useCallback((sectionId: string) => {
     const scrollToTarget = () => {
       const el = document.getElementById(sectionId);
@@ -1112,6 +1180,7 @@ export default function App() {
         jobsCount={jobsTotal}
         onNavigateHome={navigateToHome}
         onNavigateJobs={() => navigateToJobs(null, { preserveScroll: false })}
+        onNavigateOutplacement={navigateToOutplacement}
         onNavigateSection={navigateToSection}
       />
       {route.page === 'jobs' ? (
@@ -1126,11 +1195,20 @@ export default function App() {
           onBackHome={navigateToHome}
           onNavigateContact={() => navigateToSection('contacto')}
         />
+      ) : route.page === 'outplacement' ? (
+        <OutplacementPage
+          language={language}
+          onBackHome={navigateToHome}
+        />
       ) : (
         <>
           <Hero language={language} />
           <About language={language} />
-          <Services language={language} />
+          <Services
+            language={language}
+            onNavigateOutplacement={navigateToOutplacement}
+            onNavigateContact={() => navigateToSection('contacto')}
+          />
           <Philosophy language={language} />
           <FeaturedJobsSection
             language={language}
@@ -1149,6 +1227,7 @@ export default function App() {
       <Footer
         language={language}
         onNavigateJobs={() => navigateToJobs(null, { preserveScroll: false })}
+        onNavigateOutplacement={navigateToOutplacement}
         onNavigateSection={navigateToSection}
       />
       <CookieBanner language={language} onOpenLegal={(type) => setLegalModal({ isOpen: true, type })} />
