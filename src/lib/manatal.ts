@@ -283,6 +283,37 @@ export function getJobExternalUrl(jobId: string): string {
   return `${MANATAL_CAREER_PAGE_URL}/jobs/${encodeURIComponent(jobId)}`;
 }
 
+const UUID_REGEX =
+  /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function slugifyJobTitle(title: string): string {
+  return title
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 72);
+}
+
+export function buildJobPath(jobId: string, title?: string): string {
+  const cleanId = encodeURIComponent(jobId);
+  if (!title) return `/jobs/${cleanId}`;
+  const slug = slugifyJobTitle(title);
+  return slug ? `/jobs/${slug}--${cleanId}` : `/jobs/${cleanId}`;
+}
+
+export function extractJobIdFromParam(rawParam: string): string {
+  const decoded = decodeURIComponent(rawParam).trim();
+  const sepIndex = decoded.lastIndexOf('--');
+  if (sepIndex !== -1) {
+    const candidate = decoded.slice(sepIndex + 2);
+    if (candidate) return candidate;
+  }
+  const uuidMatch = decoded.match(UUID_REGEX);
+  return uuidMatch ? uuidMatch[0] : decoded;
+}
+
 async function fetchJobDetailRaw(
   jobId: string,
   signal?: AbortSignal
@@ -308,6 +339,24 @@ export async function fetchManatalJobById(
   return normalizeJob(detail, detail);
 }
 
+async function fetchJobsPage(
+  page: number,
+  pageSize: number,
+  signal?: AbortSignal
+): Promise<ManatalJobListResponse> {
+  const url = `${MANATAL_API_BASE}/career-pages/${encodeURIComponent(
+    MANATAL_CLIENT_SLUG
+  )}/job-posts?page=${page}&size=${pageSize}&page_size=${pageSize}`;
+  const response = await fetch(url, {
+    signal,
+    headers: { Accept: 'application/json' },
+  });
+  if (!response.ok) {
+    throw new Error(`Manatal jobs request failed (${response.status})`);
+  }
+  return (await response.json()) as ManatalJobListResponse;
+}
+
 export async function fetchManatalJobs(options?: {
   pageSize?: number;
   signal?: AbortSignal;
@@ -315,36 +364,54 @@ export async function fetchManatalJobs(options?: {
   const pageSize = options?.pageSize ?? 50;
   const signal = options?.signal;
 
-  const response = await fetch(
-    `${MANATAL_API_BASE}/career-pages/${encodeURIComponent(
-      MANATAL_CLIENT_SLUG
-    )}/job-posts?page_size=${pageSize}`,
-    {
-      signal,
-      headers: { Accept: 'application/json' },
-    }
-  );
+  const firstPage = await fetchJobsPage(1, pageSize, signal);
+  const allItems: ManatalJobListItem[] = [...(firstPage.items ?? [])];
+  const totalPages = Math.min(firstPage.pages ?? 1, 10);
 
-  if (!response.ok) {
-    throw new Error(`Manatal jobs request failed (${response.status})`);
+  if (totalPages > 1) {
+    const remainingPages = Array.from(
+      { length: totalPages - 1 },
+      (_, idx) => idx + 2
+    );
+    const pageResponses = await Promise.allSettled(
+      remainingPages.map((pageNum) => fetchJobsPage(pageNum, pageSize, signal))
+    );
+    for (const res of pageResponses) {
+      if (res.status === 'fulfilled' && Array.isArray(res.value.items)) {
+        allItems.push(...res.value.items);
+      }
+    }
   }
 
-  const data = (await response.json()) as ManatalJobListResponse;
-  const publishedItems = (data.items ?? []).filter(
-    (item) => item.status === 'published' && item.visibility === 'public'
-  );
-
-  // Enrich items with single-job endpoint for work_type, contract_details, and published_at
-  const detailResults = await Promise.allSettled(
-    publishedItems.slice(0, 24).map((item) => fetchJobDetailRaw(item.id, signal))
-  );
-
-  const enriched = publishedItems.map((item, idx) => {
-    const result = detailResults[idx];
-    const detail =
-      result && result.status === 'fulfilled' ? result.value : null;
-    return normalizeJob(item, detail);
+  // Deduplicate by ID and filter to public published jobs
+  const seenIds = new Set<string>();
+  const publishedItems = allItems.filter((item) => {
+    if (item.status !== 'published' || item.visibility !== 'public') {
+      return false;
+    }
+    if (seenIds.has(item.id)) return false;
+    seenIds.add(item.id);
+    return true;
   });
+
+  // Enrich first 48 jobs in batches so catalog cards show modality/date quickly
+  const enrichTargets = publishedItems.slice(0, 48);
+  const detailMap = new Map<string, ManatalJobDetailResponse>();
+  for (let i = 0; i < enrichTargets.length; i += 12) {
+    const batch = enrichTargets.slice(i, i + 12);
+    const results = await Promise.allSettled(
+      batch.map((item) => fetchJobDetailRaw(item.id, signal))
+    );
+    results.forEach((result, idx) => {
+      if (result.status === 'fulfilled') {
+        detailMap.set(batch[idx].id, result.value);
+      }
+    });
+  }
+
+  const enriched = publishedItems.map((item) =>
+    normalizeJob(item, detailMap.get(item.id) ?? null)
+  );
 
   enriched.sort((a, b) => {
     if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
@@ -355,6 +422,6 @@ export async function fetchManatalJobs(options?: {
 
   return {
     jobs: enriched,
-    total: data.total ?? enriched.length,
+    total: firstPage.total ?? enriched.length,
   };
 }

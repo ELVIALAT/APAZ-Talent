@@ -3,7 +3,12 @@ import { Menu, X, LinkedinIcon, InstagramIcon, XIcon, CheckCircle2 } from "lucid
 import { useState, useEffect, useCallback } from "react";
 import { PrivacyPolicy, CookiePolicy, CookieSettings } from "./LegalContent";
 import { supabase } from "./lib/supabase";
-import { fetchManatalJobs, NormalizedJob } from "./lib/manatal";
+import {
+  buildJobPath,
+  extractJobIdFromParam,
+  fetchManatalJobs,
+  NormalizedJob,
+} from "./lib/manatal";
 import { FeaturedJobsSection } from "./components/FeaturedJobsSection";
 import { JobsPage } from "./components/JobsPage";
 import { OutplacementPage } from "./components/OutplacementPage";
@@ -23,7 +28,7 @@ function parseRoute(pathname: string): RouteState {
   }
   const match = cleaned.match(/^\/(?:jobs|vacantes)\/([^/]+)$/);
   if (match) {
-    return { page: 'jobs', jobId: decodeURIComponent(match[1]) };
+    return { page: 'jobs', jobId: extractJobIdFromParam(match[1]) };
   }
   return { page: 'home' };
 }
@@ -1107,16 +1112,18 @@ export default function App() {
 
   useEffect(() => {
     if (route.page === 'jobs') {
-      document.title =
-        language === 'es'
-          ? 'Vacantes | APAZ TALENT SEARCH'
-          : 'Jobs | APAZ TALENT SEARCH';
+      if (!route.jobId) {
+        document.title =
+          language === 'es'
+            ? 'Vacantes | APAZ TALENT SEARCH'
+            : 'Jobs | APAZ TALENT SEARCH';
+      }
     } else if (route.page === 'outplacement') {
       document.title = 'Outplacement | APAZ TS powered by ELVIA';
     } else {
       document.title = 'APAZ TALENT SEARCH';
     }
-  }, [route.page, language]);
+  }, [route, language]);
 
   const navigateTo = useCallback(
     (path: string, options?: { scrollToTop?: boolean }) => {
@@ -1136,13 +1143,11 @@ export default function App() {
   }, [navigateTo]);
 
   const navigateToJobs = useCallback(
-    (jobId?: string | null, options?: { preserveScroll?: boolean }) => {
-      const targetPath = jobId ? `/jobs/${encodeURIComponent(jobId)}` : '/jobs';
-      const shouldPreserveScroll =
-        options?.preserveScroll ?? route.page === 'jobs';
-      navigateTo(targetPath, { scrollToTop: !shouldPreserveScroll });
+    (jobId?: string | null, jobTitle?: string) => {
+      const targetPath = jobId ? buildJobPath(jobId, jobTitle) : '/jobs';
+      navigateTo(targetPath, { scrollToTop: true });
     },
-    [navigateTo, route.page]
+    [navigateTo]
   );
 
   const navigateToOutplacement = useCallback(() => {
@@ -1179,7 +1184,7 @@ export default function App() {
         currentPage={route.page}
         jobsCount={jobsTotal}
         onNavigateHome={navigateToHome}
-        onNavigateJobs={() => navigateToJobs(null, { preserveScroll: false })}
+        onNavigateJobs={() => navigateToJobs(null)}
         onNavigateOutplacement={navigateToOutplacement}
         onNavigateSection={navigateToSection}
       />
@@ -1190,7 +1195,7 @@ export default function App() {
           loading={jobsLoading}
           error={jobsError}
           selectedJobId={route.jobId}
-          onSelectJob={(jobId) => navigateToJobs(jobId, { preserveScroll: true })}
+          onSelectJob={(jobId, jobTitle) => navigateToJobs(jobId, jobTitle)}
           onRetry={retryJobs}
           onBackHome={navigateToHome}
           onNavigateContact={() => navigateToSection('contacto')}
@@ -1217,7 +1222,7 @@ export default function App() {
             loading={jobsLoading}
             error={jobsError}
             onRetry={retryJobs}
-            onNavigateJobs={(jobId) => navigateToJobs(jobId, { preserveScroll: false })}
+            onNavigateJobs={(jobId, jobTitle) => navigateToJobs(jobId, jobTitle)}
             onNavigateContact={() => navigateToSection('contacto')}
           />
           {/* <Blog language={language} /> */}
@@ -1226,7 +1231,7 @@ export default function App() {
       )}
       <Footer
         language={language}
-        onNavigateJobs={() => navigateToJobs(null, { preserveScroll: false })}
+        onNavigateJobs={() => navigateToJobs(null)}
         onNavigateOutplacement={navigateToOutplacement}
         onNavigateSection={navigateToSection}
       />

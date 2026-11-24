@@ -17,7 +17,7 @@ interface FeaturedJobsSectionProps {
   loading: boolean;
   error: string | null;
   onRetry: () => void;
-  onNavigateJobs: (jobId?: string) => void;
+  onNavigateJobs: (jobId?: string, jobTitle?: string) => void;
   onNavigateContact: () => void;
 }
 
@@ -202,7 +202,7 @@ export function FeaturedJobsSection({
                 <button
                   key={job.id}
                   type="button"
-                  onClick={() => onNavigateJobs(job.id)}
+                  onClick={() => onNavigateJobs(job.id, title)}
                   className="w-full text-left p-8 md:p-10 lg:px-12 flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-brand-white hover:bg-brand-black hover:text-white transition-colors duration-300 group cursor-pointer"
                 >
                   <div className="space-y-3 flex-1 min-w-0">

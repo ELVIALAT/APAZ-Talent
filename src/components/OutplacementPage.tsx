@@ -77,30 +77,31 @@ const copy = {
         icon: 'heart',
       },
     ],
-    platformEyebrow: 'TECNOLOGÍA PARA LA TRANSICIÓN DE CARRERA',
+    platformEyebrow: 'ECOSISTEMA DE 12+ HERRAMIENTAS CONECTADAS',
     platformTitle: '¿Qué recibe tu equipo dentro de ELVIA?',
-    platformQuote: 'CONECTA TU PRESENTE CON EL FUTURO QUE QUIERES',
+    platformQuote:
+      'LA TRANSICIÓN DE CARRERA DEJA DE SER UN LABERINTO: SE VUELVE UN PROYECTO QUE TÚ GERENCIAS',
     platformLink: 'EXPLORAR ELVIA.LAT',
     modules: [
       {
         num: '01',
-        title: 'Autogestión 24/7 con IA',
-        desc: 'Ruta guiada paso a paso para que cada persona avance a su ritmo desde cualquier ciudad de México, Colombia y LATAM.',
+        title: 'Autoconocimiento (PMI + IKIGAI)',
+        desc: 'Primero acompañamos el duelo laboral con Bienestar (check-in diario y respiración); luego 6 pilares PMI/IKIGAI para definir perfil, competencias 6+6 y oferta de valor.',
       },
       {
         num: '02',
-        title: 'Oferta de Valor & Marca Personal',
-        desc: 'Claridad en logros, posicionamiento profesional, CV de alto impacto y narrativa ejecutiva coherente.',
+        title: 'CV Harvard ATS & LinkedIn® Pro',
+        desc: 'Genera un CV ejecutivo en formato Harvard ATS-friendly, sintoniza su perfil de LinkedIn® (hasta 3× más contactos) y mide el % match CV vs. Vacante.',
       },
       {
         num: '03',
-        title: 'Estrategia de Red & Lazos Débiles',
-        desc: 'Metodología estructurada para activar contactos clave y acceder al mercado oculto de oportunidades laborales.',
+        title: 'Buscador, Pipeline Kanban & Simulador',
+        desc: 'Buscador conectado con 5 empresas objetivo y Google Jobs, tablero Kanban con métricas en tiempo real y simulador de entrevistas (HR, Hiring Manager, Headhunter).',
       },
       {
         num: '04',
-        title: 'Acompañamiento Híbrido APAZ',
-        desc: 'Posibilidad de sumar sesiones con mentores de transición profesional para gerencias y posiciones directivas.',
+        title: 'Mentora 24×7 + Mentor Experto 1:1',
+        desc: 'Asistencia constante 24×7 dentro de la plataforma, Biblioteca de recursos y opción de sesiones 1:1 de 50 min con mentores expertos en transición.',
       },
     ],
     compareEyebrow: 'MODELO ESCALABLE',
@@ -208,30 +209,31 @@ const copy = {
         icon: 'heart',
       },
     ],
-    platformEyebrow: 'CAREER TRANSITION TECHNOLOGY',
+    platformEyebrow: 'ECOSYSTEM OF 12+ CONNECTED TOOLS',
     platformTitle: 'What does your team receive inside ELVIA?',
-    platformQuote: 'CONNECT YOUR PRESENT WITH THE FUTURE YOU WANT',
+    platformQuote:
+      'CAREER TRANSITION STOPS BEING A MAZE: IT BECOMES A PROJECT YOU LEAD',
     platformLink: 'EXPLORE ELVIA.LAT',
     modules: [
       {
         num: '01',
-        title: '24/7 AI Self-Management',
-        desc: 'Step-by-step guided roadmap so every individual progresses at their own pace anywhere across Mexico, Colombia, and LATAM.',
+        title: 'Self-Discovery (PMI + IKIGAI)',
+        desc: 'We first support emotional transition via Well-being (daily check-in & breathing), followed by 6 PMI/IKIGAI pillars covering 6+6 skills and unique value offer.',
       },
       {
         num: '02',
-        title: 'Value Offer & Personal Branding',
-        desc: 'Sharp articulation of achievements, professional positioning, high-impact resume, and executive narrative.',
+        title: 'Harvard ATS CV & LinkedIn® Pro',
+        desc: 'Builds an executive Harvard ATS-friendly resume, optimizes LinkedIn® profiles (up to 3× more recruiter reach), and scores CV-to-Job compatibility.',
       },
       {
         num: '03',
-        title: 'Network & Weak-Ties Strategy',
-        desc: 'Structured methodology to activate strategic contacts and reach the hidden job market.',
+        title: 'Job Radar, Kanban Pipeline & Simulator',
+        desc: 'Target-company job search (Google Jobs), Kanban board with live funnel metrics, and AI interview simulator (HR, Hiring Manager, Headhunter modes).',
       },
       {
         num: '04',
-        title: 'Hybrid APAZ Coaching',
-        desc: 'Seamless option to add human transition mentors for senior management and executive roles.',
+        title: '24/7 AI Guide + Optional 1:1 Mentor',
+        desc: 'Always-on 24/7 chat mentorship, curated Library & My Documents hub, plus optional 50-minute 1:1 sessions with senior career transition mentors.',
       },
     ],
     compareEyebrow: 'SCALABLE MODEL',
@@ -403,22 +405,24 @@ export function OutplacementPage({
                 {t.eyebrow}
               </span>
 
-              {/* Co-branding lockup */}
-              <div className="inline-flex flex-wrap items-center gap-5 border border-white/15 bg-white/[0.03] px-5 py-3.5 mb-10">
-                <span className="text-xs font-black uppercase tracking-[0.2em] text-white">
-                  APAZ TALENT SEARCH
-                </span>
-                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[#00b4b4] border-x border-white/15 px-4">
+              {/* Co-branding lockup using official APAZ + ELVIA logos */}
+              <div className="inline-flex flex-wrap items-center gap-6 border border-white/20 bg-brand-black px-6 py-4 mb-10">
+                <img
+                  src="/logo-fondo-negro.png"
+                  alt="APAZ Talent Search"
+                  className="h-20 sm:h-24 w-auto object-contain"
+                />
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#2dd4bf] border-x border-white/20 px-4 py-1.5">
                   {t.poweredBy}
                 </span>
                 <img
                   src="/elvia-logo.png"
                   alt="ELVIA"
-                  className="h-7 w-auto object-contain"
+                  className="h-9 sm:h-11 w-auto object-contain"
                 />
               </div>
 
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-black uppercase leading-[0.88] tracking-tighter mb-8">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black uppercase leading-[0.88] tracking-tighter mb-8">
                 {t.heroTitleMain} <br />
                 <span className="text-brand-gold italic font-light lowercase tracking-normal">
                   {t.heroTitleAccent}
@@ -478,33 +482,33 @@ export function OutplacementPage({
       {/* 2. Video Showcase */}
       <section
         id="outplacement-video"
-        className="py-20 md:py-28 border-b-2 border-brand-black bg-brand-white scroll-mt-32"
+        className="py-12 md:py-16 border-b-2 border-brand-black bg-brand-white scroll-mt-32"
       >
-        <div className="max-w-[1600px] mx-auto px-6">
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
-            <div>
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] mb-4 block border-l-4 border-brand-gold pl-4">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
+          <div className="max-w-[860px] mx-auto">
+            <div className="mb-8">
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] mb-3 block border-l-4 border-brand-gold pl-4">
                 {t.videoEyebrow}
               </span>
-              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter leading-none">
+              <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter leading-none">
                 {t.videoTitle}
               </h2>
             </div>
-          </div>
 
-          <OutplacementVideoPlayer language={language} />
+            <OutplacementVideoPlayer language={language} />
 
-          <div className="grid md:grid-cols-3 border-x-2 border-b-2 border-brand-black divide-y-2 md:divide-y-0 md:divide-x-2 divide-brand-black">
-            {t.videoBullets.map((item) => (
-              <div key={item.label} className="p-8 bg-brand-white">
-                <span className="text-[10px] font-black uppercase tracking-[0.25em] text-brand-gold block mb-3">
-                  {item.label}
-                </span>
-                <p className="text-xs leading-relaxed opacity-75">
-                  {item.text}
-                </p>
-              </div>
-            ))}
+            <div className="grid md:grid-cols-3 border-x-2 border-b-2 border-brand-black divide-y-2 md:divide-y-0 md:divide-x-2 divide-brand-black">
+              {t.videoBullets.map((item) => (
+                <div key={item.label} className="p-6 bg-brand-white">
+                  <span className="text-[10px] font-black uppercase tracking-[0.25em] text-brand-gold block mb-2">
+                    {item.label}
+                  </span>
+                  <p className="text-xs leading-relaxed opacity-75">
+                    {item.text}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -612,7 +616,35 @@ export function OutplacementPage({
             </h2>
           </div>
 
-          <div className="border-2 border-brand-black overflow-x-auto">
+          {/* Mobile stacked comparison cards */}
+          <div className="md:hidden border-2 border-brand-black divide-y-2 divide-brand-black">
+            {t.compareRows.map((row) => (
+              <div key={row.axis} className="bg-brand-white">
+                <div className="p-4 bg-brand-gray border-b border-brand-black/15 text-[10px] font-black uppercase tracking-[0.2em]">
+                  {row.axis}
+                </div>
+                <div className="p-4 space-y-3 text-xs">
+                  <div>
+                    <span className="block text-[9px] font-black uppercase tracking-widest opacity-45 mb-1">
+                      {language === 'es'
+                        ? 'OUTPLACEMENT TRADICIONAL'
+                        : 'TRADITIONAL OUTPLACEMENT'}
+                    </span>
+                    <p className="opacity-65 leading-relaxed">{row.traditional}</p>
+                  </div>
+                  <div className="p-3 bg-brand-gold/15 border-l-4 border-brand-gold">
+                    <span className="block text-[9px] font-black uppercase tracking-widest text-brand-black mb-1">
+                      APAZ TS POWERED BY ELVIA
+                    </span>
+                    <p className="font-bold leading-relaxed">{row.elvia}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop comparison table */}
+          <div className="hidden md:block border-2 border-brand-black overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[680px]">
               <thead>
                 <tr className="border-b-2 border-brand-black bg-brand-gray text-[10px] font-black uppercase tracking-[0.25em]">

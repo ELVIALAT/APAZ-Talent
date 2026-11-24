@@ -1,0 +1,7 @@
+[[edge_functions]]
+  path = "/jobs/*"
+  function = "job-og"
+
+[[edge_functions]]
+  path = "/vacantes/*"
+  function = "job-og"
